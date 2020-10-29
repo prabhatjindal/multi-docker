@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+  
+before_install:
+  - docker build -t pjindal9/multi-docker -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true pjindal9/multi-docker npm run test
+language: generic
+after_success:
+    - docker build -t pjindal9/multi-client ./client
+    - docker build -t pjindal9/multi-nginx ./nginx
+    - docker build -t pjindal9/multi-server ./server
+    - docker build -t pjindal9/multi-worker ./worker
+    # log in to docker hub
+    - echo "$Docker_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push pjindal9/multi-client
+    - docker push pjindal9/multi-nginx
+    - docker push pjindal9/multi-server
+    - docker push pjindal9/multi-worker
